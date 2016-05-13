@@ -161,6 +161,17 @@ public class MainActivity extends Activity {
                 if (cancelTask) {
                     break;
                 }
+
+                /**
+                 * Uncomment this code if you don't have enough files to test Stop Scan functionality.
+                 * This code will make the thread sleep for 5 secs when scanning directories
+                try {
+                    Log.d("FileScanner", "Thread is sleeping for 5 secs");
+                    Thread.sleep(5000);
+                } catch (Exception e) {
+                    Log.d("FileScanner", "THread was interrupted");
+                }
+                 */
             }
 
 
