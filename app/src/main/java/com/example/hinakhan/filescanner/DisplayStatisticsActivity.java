@@ -32,7 +32,7 @@ public class DisplayStatisticsActivity extends Activity {
         btnShareStats.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO - Add share stats code
+                shareStats(getIntent());
             }
         });
 
@@ -99,4 +99,49 @@ public class DisplayStatisticsActivity extends Activity {
 
         tblLayout.addView(tableRow);
     }
+
+    /**
+     * Launch Intent for sharing scan statistics.
+     * @param intent
+     */
+    private void shareStats(Intent intent) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/html");
+        shareIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, getStatsAsHTML(intent));
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Scan Statistics");
+        shareIntent.putExtra(Intent.EXTRA_TITLE, "Scan Statistics");
+        startActivity(Intent.createChooser(shareIntent, "Share Statistics"));
+    }
+
+    private String getStatsAsHTML(Intent intent) {
+        ScanStatistics scanStatistics = (ScanStatistics)intent.getSerializableExtra(MainActivity.SCAN_STATISTICS);
+        StringBuffer sbuf = new StringBuffer();
+
+        if (scanStatistics != null) {
+            sbuf.append("<tr><td>Files Scanned</td><td>").append(scanStatistics.getTotalFiles()).append("</td></tr>");
+            sbuf.append("<tr><td>Average File Size</td><td>").append(scanStatistics.getAverageFileSize()).append("</td></tr>");
+
+            sbuf.append("<tr><td>Frequent File Extensions</td><td>");
+            Map<String, Integer> frequentFileExtensions = scanStatistics.getFrequentedFileExtensions(ScanStatistics.MAX_FREQUENT_FILE_EXTENSIONS);
+            for (Map.Entry<String, Integer> entry : frequentFileExtensions.entrySet()) {
+                sbuf.append(entry.getKey()).append("(").append(entry.getValue()).append(")").append("<br/>");
+            }
+            sbuf.append("</td></tr>");
+
+            sbuf.append("<tr><td>Biggest Files</td><td>");
+            int counter = 0;
+            for (FileStats fileStats : scanStatistics.getBiggestFiles()) {
+                sbuf.append(fileStats.getFilename()).append("(").append(fileStats.getFileSizeInKiloBytes()).append(" Kb)").append("<br/>");
+                counter++;
+                if (counter >= ScanStatistics.MAX_BIGGEST_FILES) {
+                    break;
+                }
+            }
+            sbuf.append("</td></tr>");
+        }
+
+        return  sbuf.toString();
+    }
+
 }
