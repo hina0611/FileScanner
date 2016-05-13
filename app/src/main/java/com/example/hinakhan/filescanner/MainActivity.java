@@ -147,17 +147,20 @@ public class MainActivity extends Activity {
             long startTime = System.currentTimeMillis();
             for(String dirname : stResult.list()) {
                 // Escape early if cancel() is called
-                if (isCancelled()) {
+                /*if (isCancelled()) {
                     statistics.setCompletedScan(false);
                     Log.d("FileScanner", "Cancelling async task");
                     break;
-                }
+                }*/
 
                 //Scan directory
                 String absolutePathToDir = Environment.getExternalStorageDirectory().toString() + "/" + dirname;
                 Log.d("FileScanner", "Scanning directory " + absolutePathToDir);
                 File file = new File(absolutePathToDir);
-                traverseDirectory(file, statistics, startTime);
+                boolean cancelTask = traverseDirectory(this, file, statistics, startTime);
+                if (cancelTask) {
+                    break;
+                }
             }
 
 
@@ -166,16 +169,31 @@ public class MainActivity extends Activity {
 
         /**
          * Traverses directory computing scan statistics.
+         * @param scannerTask
          * @param dir
          * @param statistics
          * @param startTime
+         * @return Boolean flag indicating is scanner task was cancelled by user action.
          */
-        protected void traverseDirectory(File dir, ScanStatistics statistics, long startTime) {
+        protected boolean traverseDirectory(ExternalMediaScannerTask scannerTask, File dir, ScanStatistics statistics, long startTime) {
+            boolean cancelTask = false;
             File[]  files = dir.listFiles();
             if(files != null) {
                 for (File file : files) {
+                    //Check if background task was stopped by user action
+                    if (scannerTask.isCancelled()) {
+                        statistics.setCompletedScan(false);
+                        Log.d("FileScanner", "Cancelling async task");
+                        cancelTask = true;
+                        break;
+                    }
+
                     if (file.isDirectory()) {
-                        traverseDirectory(file, statistics, startTime);
+                        cancelTask = traverseDirectory(scannerTask, file, statistics, startTime);
+                        if (cancelTask) {
+                            //Stop directory traversal
+                            break;
+                        }
                     } else {
                         statistics.updateStatistics(file); //Update scan statistics
 
@@ -186,6 +204,8 @@ public class MainActivity extends Activity {
                     }
                 }
             }
+
+            return cancelTask;
         }
 
         protected void onProgressUpdate(Integer... progress) {
