@@ -119,26 +119,25 @@ public class DisplayStatisticsActivity extends Activity {
         StringBuffer sbuf = new StringBuffer();
 
         if (scanStatistics != null) {
-            sbuf.append("<tr><td>Files Scanned</td><td>").append(scanStatistics.getTotalFiles()).append("</td></tr>");
-            sbuf.append("<tr><td>Average File Size</td><td>").append(scanStatistics.getAverageFileSize()).append("</td></tr>");
+            sbuf.append("\n\tFiles Scanned:\t").append(scanStatistics.getTotalFiles());
+            sbuf.append("\n\tAverage File Size:\t").append(scanStatistics.getAverageFileSize());
 
-            sbuf.append("<tr><td>Frequent File Extensions</td><td>");
+            sbuf.append("\n\tFrequent File Extensions:\t");
             Map<String, Integer> frequentFileExtensions = scanStatistics.getFrequentedFileExtensions(ScanStatistics.MAX_FREQUENT_FILE_EXTENSIONS);
             for (Map.Entry<String, Integer> entry : frequentFileExtensions.entrySet()) {
-                sbuf.append(entry.getKey()).append("(").append(entry.getValue()).append(")").append("<br/>");
+                sbuf.append("\n\t\t").append(entry.getKey()).append("(").append(entry.getValue()).append(")");
             }
-            sbuf.append("</td></tr>");
 
-            sbuf.append("<tr><td>Biggest Files</td><td>");
+            sbuf.append("\n\tBiggest Files:\t");
             int counter = 0;
             for (FileStats fileStats : scanStatistics.getBiggestFiles()) {
-                sbuf.append(fileStats.getFilename()).append("(").append(fileStats.getFileSizeInKiloBytes()).append(" Kb)").append("<br/>");
+                sbuf.append("\n\t\t").append(fileStats.getFilename()).append("(").append(fileStats.getFileSizeInKiloBytes()).append(" Kb)");
                 counter++;
                 if (counter >= ScanStatistics.MAX_BIGGEST_FILES) {
                     break;
                 }
             }
-            sbuf.append("</td></tr>");
+
         }
 
         return  sbuf.toString();
